@@ -237,7 +237,7 @@ cui_call_hang_up (CuiCall *self)
 }
 
 /**
- * cui_call_send_dtmf
+ * cui_call_send_dtmf:
  * @self: The call
  * @dtmf: The DTMF data
  *
@@ -257,4 +257,27 @@ cui_call_send_dtmf (CuiCall *self, const gchar *dtmf)
   g_return_if_fail (iface->send_dtmf);
 
   iface->send_dtmf (self, dtmf);
+}
+
+/**
+ * cui_call_silence_ring:
+ * @self: The call
+ *
+ * Request ringing to stop.
+ */
+void
+cui_call_silence_ring (CuiCall *self)
+{
+  CuiCallInterface *iface;
+  CuiCallState state;
+
+  g_return_if_fail (CUI_IS_CALL (self));
+
+  state = cui_call_get_state (self);
+  g_return_if_fail (state == CUI_CALL_STATE_INCOMING);
+
+  iface = CUI_CALL_GET_IFACE (self);
+  g_return_if_fail (iface->silence_ring);
+
+  iface->silence_ring (self);
 }
