@@ -84,7 +84,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_top">30</property>
-                    <property name="margin_bottom">40</property>
+                    <property name="margin_bottom">20</property>
                     <attributes>
                       <attribute name="scale" value="1.6"/>
                     </attributes>
@@ -298,7 +298,76 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkBox" id="blank">
+                          <object class="GtkBox" id="blank_gsm1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="no_show_all">True</property>
+                            <property name="hexpand">True</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="auxilliary_controls">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="spacing">12</property>
+                        <property name="height-request">65</property>
+                        <!-- Add blank boxes for alignment-->
+                        <child>
+                          <object class="GtkBox" id="blank_aux1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="no_show_all">True</property>
+                            <property name="hexpand">True</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="silence">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="no-show_all">True</property>
+                            <property name="hexpand">True</property>
+                            <signal name="clicked" handler="on_silence_clicked" swapped="no"/>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="icon-name">notifications-disabled-symbolic</property>
+                                    <property name="icon-size">3</property>
+                                    <property name="vexpand">True</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="margin-bottom">4</property>
+                                    <property name="wrap">True</property>
+                                    <property name="justify">center</property>
+                                    <property name="label" translatable="yes">Stop ring</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child internal-child="accessible">
+                              <object class="AtkObject" id="a11y-silence">
+                                <property name="accessible-name" translatable="yes">Stop ring</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <!-- Add blank boxes for alignment-->
+                        <child>
+                          <object class="GtkBox" id="blank_aux2">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -328,6 +397,7 @@
             <property name="can_focus">False</property>
             <property name="orientation">horizontal</property>
             <property name="hexpand">True</property>
+            <property name="spacing">12</property>
             <child>
               <object class="GtkButton" id="hang_up">
                 <property name="always_show_image">True</property>
@@ -369,7 +439,6 @@
                 <property name="visible">True</property>
                 <property name="width_request">150</property>
                 <property name="hexpand">True</property>
-                <property name="margin_left">12</property>
                 <signal name="clicked" handler="on_answer_clicked" swapped="no"/>
                 <style>
                   <class name="suggested-action"/>
@@ -488,7 +557,10 @@
       <widget name="add_call"/>
       <widget name="dial_pad"/>
       <widget name="hold"/>
-      <widget name="blank"/>
+      <widget name="blank_gsm1"/>
+      <widget name="blank_aux1"/>
+      <widget name="silence"/>
+      <widget name="blank_aux2"/>
     </widgets>
   </object>
 </interface>

@@ -62,12 +62,13 @@ struct _CuiCallDisplay {
   GtkLabel        *secondary_contact_info;
   GtkLabel        *status;
 
-  GtkBox          *controls;
   GtkBox          *gsm_controls;
   GtkBox          *general_controls;
+  GtkBox          *auxilliary_controls;
   GtkToggleButton *speaker;
   GtkToggleButton *mute;
   GtkButton       *hang_up;
+  GtkButton       *silence;
   GtkButton       *answer;
 
   GCancellable    *cancel;
@@ -100,6 +101,17 @@ on_answer_clicked (GtkButton *button, CuiCallDisplay *self)
   g_return_if_fail (CUI_IS_CALL_DISPLAY (self));
 
   cui_call_accept (self->call);
+}
+
+
+static void
+on_silence_clicked (GtkButton *button,
+                    CuiCallDisplay *self)
+{
+  g_return_if_fail (CUI_IS_CALL_DISPLAY (self));
+
+  cui_call_silence_ring (self->call);
+  gtk_widget_set_sensitive (GTK_WIDGET (button), FALSE);
 }
 
 
@@ -235,10 +247,11 @@ on_call_state_changed (CuiCallDisplay *self,
   switch (state)
   {
   case CUI_CALL_STATE_INCOMING:
-    gtk_widget_hide (GTK_WIDGET (self->status));
-    gtk_widget_hide (GTK_WIDGET (self->controls));
+    gtk_widget_hide (GTK_WIDGET (self->general_controls));
+    gtk_widget_hide (GTK_WIDGET (self->gsm_controls));
     gtk_widget_show (GTK_WIDGET (self->incoming_phone_call));
     gtk_widget_show (GTK_WIDGET (self->answer));
+    gtk_widget_show (GTK_WIDGET (self->auxilliary_controls));
     gtk_style_context_remove_class
       (hang_up_style, GTK_STYLE_CLASS_DESTRUCTIVE_ACTION);
     break;
@@ -259,8 +272,9 @@ on_call_state_changed (CuiCallDisplay *self,
       (hang_up_style, GTK_STYLE_CLASS_DESTRUCTIVE_ACTION);
     gtk_widget_hide (GTK_WIDGET (self->answer));
     gtk_widget_hide (GTK_WIDGET (self->incoming_phone_call));
-    gtk_widget_show (GTK_WIDGET (self->controls));
-    gtk_widget_show (GTK_WIDGET (self->status));
+    gtk_widget_show (GTK_WIDGET (self->general_controls));
+    gtk_widget_show (GTK_WIDGET (self->gsm_controls));
+    gtk_widget_hide (GTK_WIDGET (self->auxilliary_controls));
 
     gtk_widget_set_visible
       (GTK_WIDGET (self->gsm_controls),
@@ -288,6 +302,7 @@ on_call_state_changed (CuiCallDisplay *self,
   switch (state)
   {
   case CUI_CALL_STATE_INCOMING:
+    gtk_label_set_text (self->status, "");
     break;
 
   case CUI_CALL_STATE_DIALING:
@@ -369,9 +384,12 @@ reset_ui (CuiCallDisplay *self)
   gtk_widget_show (GTK_WIDGET (self->answer));
   gtk_widget_show (GTK_WIDGET (self->hang_up));
   gtk_widget_hide (GTK_WIDGET (self->incoming_phone_call));
-  gtk_widget_show (GTK_WIDGET (self->controls));
+  gtk_widget_show (GTK_WIDGET (self->general_controls));
+  gtk_widget_show (GTK_WIDGET (self->gsm_controls));
+  gtk_widget_show (GTK_WIDGET (self->auxilliary_controls));
   gtk_widget_show (GTK_WIDGET (self->status));
   gtk_widget_show (GTK_WIDGET (self->gsm_controls));
+  gtk_widget_set_sensitive (GTK_WIDGET (self->silence), TRUE);
 }
 
 static void
@@ -530,17 +548,19 @@ cui_call_display_class_init (CuiCallDisplayClass *klass)
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, secondary_contact_info);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, avatar);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, status);
-  gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, controls);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, gsm_controls);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, general_controls);
+  gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, auxilliary_controls);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, speaker);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, mute);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, hang_up);
+  gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, silence);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, answer);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, dial_pad_revealer);
   gtk_widget_class_bind_template_child (widget_class, CuiCallDisplay, keypad_entry);
   gtk_widget_class_bind_template_callback (widget_class, on_answer_clicked);
   gtk_widget_class_bind_template_callback (widget_class, on_hang_up_clicked);
+  gtk_widget_class_bind_template_callback (widget_class, on_silence_clicked);
   gtk_widget_class_bind_template_callback (widget_class, hold_toggled_cb);
   gtk_widget_class_bind_template_callback (widget_class, mute_toggled_cb);
   gtk_widget_class_bind_template_callback (widget_class, speaker_toggled_cb);
