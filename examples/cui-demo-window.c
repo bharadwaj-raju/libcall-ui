@@ -24,6 +24,7 @@ struct _CuiDemoWindow
   CuiDialpad          *dialpad;
   CuiKeypad           *keypad;
   CuiDemoCall         *call1;
+  GtkRevealer         *ring_revealer;
 };
 
 G_DEFINE_TYPE (CuiDemoWindow, cui_demo_window, HDY_TYPE_APPLICATION_WINDOW)
@@ -70,13 +71,27 @@ on_call_state_changed (CuiDemoCall *call, GParamSpec *pspec, gpointer user_data)
 
   g_return_if_fail (call == self->call1);
 
-  if (state == CUI_CALL_STATE_DISCONNECTED)
+  if (state == CUI_CALL_STATE_DISCONNECTED) {
     g_clear_object (&self->call1);
+    gtk_revealer_set_reveal_child (self->ring_revealer, FALSE);
+  }
 
   gtk_widget_set_sensitive (GTK_WIDGET (self->incoming_call),
                             state == CUI_CALL_STATE_DISCONNECTED);
 }
 
+
+static void
+on_call_ringing_changed (CuiDemoCall *call, GParamSpec *pspec, gpointer user_data)
+{
+  CuiDemoWindow *self = CUI_DEMO_WINDOW (user_data);
+  gboolean ringing;
+
+  g_return_if_fail (call == self->call1);
+
+  g_object_get (self->call1, "ringing", &ringing, NULL);
+  gtk_revealer_set_reveal_child (self->ring_revealer, ringing);
+}
 
 static void
 on_incoming_call_clicked (GtkWidget     *sender,
@@ -90,6 +105,12 @@ on_incoming_call_clicked (GtkWidget     *sender,
                       G_CALLBACK (on_call_state_changed),
                       self);
     on_call_state_changed (self->call1, NULL, self);
+
+    g_signal_connect (self->call1,
+                      "notify::ringing",
+                      G_CALLBACK (on_call_ringing_changed),
+                      self);
+    on_call_ringing_changed (self->call1, NULL, self);
 
     cui_call_display_set_call (self->call_display, CUI_CALL (self->call1));
   }
@@ -160,6 +181,7 @@ cui_demo_window_class_init (CuiDemoWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, CuiDemoWindow, keypad);
   gtk_widget_class_bind_template_child (widget_class, CuiDemoWindow, content_box);
   gtk_widget_class_bind_template_child (widget_class, CuiDemoWindow, incoming_call);
+  gtk_widget_class_bind_template_child (widget_class, CuiDemoWindow, ring_revealer);
   gtk_widget_class_bind_template_child (widget_class, CuiDemoWindow, theme_variant_image);
   gtk_widget_class_bind_template_callback (widget_class, back_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, key_pressed_cb);
