@@ -23,6 +23,7 @@ enum {
   PROP_STATE,
   PROP_ENCRYPTED,
   PROP_CAN_DTMF,
+  PROP_RINGING,
   PROP_LAST_PROP,
 };
 
@@ -36,6 +37,7 @@ struct _CuiDemoCall
   CuiCallState  state;
   gboolean      encrypted;
   gboolean      can_dtmf;
+  gboolean      ringing;
 };
 
 static void cui_demo_cui_call_interface_init (CuiCallInterface *iface);
@@ -43,6 +45,23 @@ G_DEFINE_TYPE_WITH_CODE (CuiDemoCall, cui_demo_call, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (CUI_TYPE_CALL,
                                                 cui_demo_cui_call_interface_init))
 
+static void
+start_ringing (CuiDemoCall *self)
+{
+  self->ringing = TRUE;
+  g_object_notify (G_OBJECT (self), "ringing");
+}
+
+static void
+stop_ringing (CuiDemoCall *self)
+{
+
+  if (!self->ringing)
+    return;
+
+  self->ringing = FALSE;
+  g_object_notify (G_OBJECT (self), "ringing");
+}
 
 static void
 cui_demo_call_get_property (GObject    *object,
@@ -71,6 +90,9 @@ cui_demo_call_get_property (GObject    *object,
   case PROP_CAN_DTMF:
     g_value_set_boolean (value, self->can_dtmf);
     break;
+  case PROP_RINGING:
+    g_value_set_boolean (value, self->ringing);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
   }
@@ -84,15 +106,17 @@ cui_demo_call_finalize (GObject *object)
 
   g_clear_object (&self->avatar_icon);
 
+  stop_ringing (self);
+
   G_OBJECT_CLASS (cui_demo_call_parent_class)->finalize (object);
 }
-
 
 
 static void
 cui_demo_call_class_init (CuiDemoCallClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  g_autoptr (GParamSpec) ring_prop = NULL;
 
   object_class->finalize = cui_demo_call_finalize;
   object_class->get_property = cui_demo_call_get_property;
@@ -120,6 +144,13 @@ cui_demo_call_class_init (CuiDemoCallClass *klass)
   g_object_class_override_property (object_class,
                                     PROP_CAN_DTMF,
                                     "can-dtmf");
+
+  ring_prop = g_param_spec_boolean ("ringing",
+                                    "Ringing",
+                                    "Whether the call is currently ringing",
+                                    FALSE,
+                                    G_PARAM_STATIC_STRINGS | G_PARAM_READABLE);
+  g_object_class_install_property (object_class, PROP_RINGING, ring_prop);
 }
 
 
@@ -185,6 +216,8 @@ on_accept_timeout (gpointer data)
   self->state = CUI_CALL_STATE_ACTIVE;
   g_object_notify (G_OBJECT (self), "state");
 
+  stop_ringing (self);
+
   return G_SOURCE_REMOVE;
 }
 
@@ -193,6 +226,8 @@ static gboolean
 on_hang_up_timeout (gpointer data)
 {
   CuiDemoCall *self = CUI_DEMO_CALL (data);
+
+  stop_ringing (self);
 
   self->state = CUI_CALL_STATE_DISCONNECTED;
   g_object_notify (G_OBJECT (self), "state");
@@ -227,6 +262,14 @@ cui_demo_call_send_dtmf (CuiCall *call, const gchar *dtmf)
   g_message ("DTMF: %s", dtmf);
 }
 
+static void
+cui_demo_call_silence_ring (CuiCall *call)
+{
+  g_return_if_fail (CUI_IS_DEMO_CALL (call));
+
+  stop_ringing (CUI_DEMO_CALL (call));
+}
+
 
 static void
 cui_demo_cui_call_interface_init (CuiCallInterface *iface)
@@ -241,6 +284,7 @@ cui_demo_cui_call_interface_init (CuiCallInterface *iface)
   iface->accept = cui_demo_call_accept;
   iface->hang_up = cui_demo_call_hang_up;
   iface->send_dtmf = cui_demo_call_send_dtmf;
+  iface->silence_ring = cui_demo_call_silence_ring;
 }
 
 
@@ -256,6 +300,8 @@ cui_demo_call_init (CuiDemoCall *self)
   self->avatar_icon = G_LOADABLE_ICON (g_file_icon_new (file));
 
   g_assert (G_IS_LOADABLE_ICON (self->avatar_icon));
+
+  start_ringing (self);
 }
 
 
