@@ -56,6 +56,7 @@ struct _CuiCallInterface {
   void           (*accept)                 (CuiCall *self);
   void           (*hang_up)                (CuiCall *self);
   void           (*send_dtmf)              (CuiCall *self, const gchar *dtmf);
+  void           (*silence_ring)           (CuiCall *self);
 };
 
 GLoadableIcon *cui_call_get_avatar_icon (CuiCall *self);
@@ -67,4 +68,5 @@ gboolean     cui_call_get_can_dtmf     (CuiCall *self);
 
 void         cui_call_accept           (CuiCall *self);
 void         cui_call_hang_up          (CuiCall *self);
-void         cui_call_send_dtmf (CuiCall *self, const gchar *dtmf);
+void         cui_call_send_dtmf        (CuiCall *self, const gchar *dtmf);
+void         cui_call_silence_ring     (CuiCall *self);
