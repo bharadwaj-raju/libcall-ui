@@ -28,6 +28,8 @@ call_ui_private_sources = files(
 
 call_ui_public_sources = files(
  'cui-call.c',
+ 'cui-audio-handler.c',
+ 'cui-audio-handler-dummy.c',
  'cui-call.h',
  'cui-call-display.c',
  'cui-call-display.h',
