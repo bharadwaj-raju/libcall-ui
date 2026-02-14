@@ -6,6 +6,9 @@
 #include "cui-config.h"
 
 #include "call-ui.h"
+#include "cui-audio-handler.h"
+#include "cui-audio-handler-dummy.h"
+#include "cui-audio-handler-callaudiod.h"
 #include "cui-encryption-indicator-priv.h"
 #include "cui-resources.h"
 
@@ -15,7 +18,8 @@
 #include <gtk/gtk.h>
 
 static gboolean cui_initialized = FALSE;
-static gboolean call_audio_initialized = FALSE;
+static gboolean audio_handler_initialized = FALSE;
+static CuiAudioHandler *cui_audio_handler = NULL;
 
 /**
  * SECTION:cui-main
@@ -94,11 +98,13 @@ cui_init (gboolean init_callaudio)
   cui_init_icons ();
   cui_init_css ();
 
-  if (init_callaudio) {
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    call_audio_init (NULL);
-G_GNUC_END_IGNORE_DEPRECATIONS
-    call_audio_initialized = TRUE;
+  if (cui_audio_handler == NULL) {
+    if (init_callaudio) {
+      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_callaudiod_new());
+    } else {
+      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_dummy_new());
+    }
+    audio_handler_initialized = TRUE;
   }
 
   cui_initialized = TRUE;
@@ -113,10 +119,20 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 void
 cui_uninit (void)
 {
-  if (call_audio_initialized) {
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    call_audio_deinit ();
-G_GNUC_END_IGNORE_DEPRECATIONS
-    call_audio_initialized = FALSE;
+  if (audio_handler_initialized) {
+    g_object_unref (G_OBJECT (cui_audio_handler));
   }
+}
+
+void
+cui_set_audio_handler (CuiAudioHandler *handler)
+{
+  cui_audio_handler = handler;
+  audio_handler_initialized = FALSE;
+}
+
+CuiAudioHandler *
+cui_get_audio_handler (void)
+{
+  return cui_audio_handler;
 }

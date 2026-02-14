@@ -5,11 +5,16 @@
  */
 #pragma once
 
+#include "cui-audio-handler.h"
+
 #include <glib.h>
 
 G_BEGIN_DECLS
 
 void cui_init (gboolean init_callaudio);
 void cui_uninit (void);
+
+void cui_set_audio_handler (CuiAudioHandler *handler);
+CuiAudioHandler * cui_get_audio_handler (void);
 
 G_END_DECLS
