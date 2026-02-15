@@ -16,6 +16,8 @@
 #include "cui-encryption-indicator-priv.h"
 
 #include "cui-call.h"
+#include "cui-main.h"
+#include "cui-audio-handler.h"
 
 #include <glib.h>
 #include <glib/gi18n-lib.h>
@@ -131,11 +133,13 @@ mute_toggled_cb (GtkToggleButton *togglebutton,
                  CuiCallDisplay  *self)
 {
   gboolean want_mute;
+  CuiAudioHandler *audio_handler;
 
   want_mute = gtk_toggle_button_get_active (togglebutton);
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  call_audio_mute_mic_async (want_mute, on_libcallaudio_async_finished, NULL);
-G_GNUC_END_IGNORE_DEPRECATIONS
+
+  audio_handler = cui_get_audio_handler ();
+  g_return_if_fail (audio_handler);
+  cui_audio_handler_mute_mic (audio_handler, want_mute);
 }
 
 
@@ -144,11 +148,14 @@ speaker_toggled_cb (GtkToggleButton *togglebutton,
                     CuiCallDisplay  *self)
 {
   gboolean want_speaker;
+  CuiAudioHandler *audio_handler;
 
   want_speaker = gtk_toggle_button_get_active (togglebutton);
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  call_audio_enable_speaker_async (want_speaker, on_libcallaudio_async_finished, NULL);
-G_GNUC_END_IGNORE_DEPRECATIONS
+
+  audio_handler = cui_get_audio_handler ();
+  g_return_if_fail (audio_handler);
+  cui_audio_handler_enable_speaker (audio_handler, want_speaker);
+
 }
 
 
@@ -189,6 +196,7 @@ on_call_state_changed (CuiCallDisplay *self,
 {
   GtkStyleContext *hang_up_style;
   CuiCallState state;
+  CuiAudioHandler *handler;
 
   g_return_if_fail (CUI_IS_CALL_DISPLAY (self));
   g_return_if_fail (CUI_IS_CALL (call));
@@ -201,6 +209,8 @@ on_call_state_changed (CuiCallDisplay *self,
 
   hang_up_style = gtk_widget_get_style_context
                     (GTK_WIDGET (self->hang_up));
+
+  handler = cui_get_audio_handler ();
 
   /* if the state changed than the call must be responsive */
   self->update_status_time = TRUE;
@@ -234,22 +244,17 @@ on_call_state_changed (CuiCallDisplay *self,
       (GTK_WIDGET (self->gsm_controls),
       state != CUI_CALL_STATE_CALLING);
 
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-    /* TODO Only switch to "call" audio mode for cellular calls */
-    call_audio_select_mode_async (CALL_AUDIO_MODE_CALL,
-                                  on_libcallaudio_async_finished,
-                                  NULL);
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+    if (handler) {
+      cui_audio_handler_select_mode(handler, CALL_AUDIO_MODE_CALL);
+    }
     self->needs_cam_reset = TRUE;
     break;
 
   case CUI_CALL_STATE_DISCONNECTED:
     if (self->needs_cam_reset) {
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-      call_audio_select_mode_async (CALL_AUDIO_MODE_DEFAULT,
-                                    on_libcallaudio_async_finished,
-                                    NULL);
-G_GNUC_END_IGNORE_DEPRECATIONS
+      if (handler) {
+        cui_audio_handler_select_mode(handler, CALL_AUDIO_MODE_DEFAULT);
+      }
     }
 
     gtk_widget_set_sensitive (GTK_WIDGET (self), FALSE);
@@ -548,8 +553,8 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   if (!call_audio_is_inited ()) {
 G_GNUC_END_IGNORE_DEPRECATIONS
     g_warning ("libcallaudio not initialized");
-    gtk_widget_set_sensitive (GTK_WIDGET (self->speaker), FALSE);
-    gtk_widget_set_sensitive (GTK_WIDGET (self->mute), FALSE);
+    // gtk_widget_set_sensitive (GTK_WIDGET (self->speaker), FALSE);
+    // gtk_widget_set_sensitive (GTK_WIDGET (self->mute), FALSE);
   }
 }
 

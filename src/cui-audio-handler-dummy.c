@@ -16,7 +16,16 @@ struct _CuiAudioHandlerDummy {
   GObject parent_instance;
 };
 
-static void cui_audio_handler_dummy_iface_init (CuiAudioHandlerInterface *iface);
+
+CuiAudioHandlerDummy *
+cui_audio_handler_dummy_new (void)
+{
+  return g_object_new (CUI_TYPE_AUDIO_HANDLER_DUMMY, NULL);
+}
+
+
+static void
+cui_audio_handler_dummy_iface_init (CuiAudioHandlerInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (CuiAudioHandlerDummy, cui_audio_handler_dummy, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (CUI_TYPE_AUDIO_HANDLER,

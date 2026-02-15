@@ -29,7 +29,15 @@ struct _CuiAudioHandlerCallaudiod {
   GObject parent_instance;
 };
 
-static void cui_audio_handler_callaudiod_iface_init (CuiAudioHandlerInterface *iface);
+CuiAudioHandlerCallaudiod *
+cui_audio_handler_callaudiod_new (void)
+{
+  return g_object_new (CUI_TYPE_AUDIO_HANDLER_CALLAUDIOD, NULL);
+}
+
+
+static void
+cui_audio_handler_callaudiod_iface_init (CuiAudioHandlerInterface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (CuiAudioHandlerCallaudiod, cui_audio_handler_callaudiod, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (CUI_TYPE_AUDIO_HANDLER,

@@ -6,6 +6,9 @@
 #include "cui-config.h"
 
 #include "call-ui.h"
+#include "cui-audio-handler.h"
+#include "cui-audio-handler-dummy.h"
+#include "cui-audio-handler-callaudiod.h"
 #include "cui-encryption-indicator-priv.h"
 #include "cui-resources.h"
 
@@ -16,6 +19,7 @@
 
 static gboolean cui_initialized = FALSE;
 static gboolean call_audio_initialized = FALSE;
+static CuiAudioHandler *cui_audio_handler = NULL;
 
 /**
  * SECTION:cui-main
@@ -101,6 +105,14 @@ G_GNUC_END_IGNORE_DEPRECATIONS
     call_audio_initialized = TRUE;
   }
 
+  if (cui_audio_handler == NULL) {
+    if (init_callaudio) {
+      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_callaudiod_new());
+    } else {
+      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_dummy_new());
+    }
+  }
+
   cui_initialized = TRUE;
 }
 
@@ -119,4 +131,16 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 G_GNUC_END_IGNORE_DEPRECATIONS
     call_audio_initialized = FALSE;
   }
+}
+
+void
+cui_set_audio_handler (CuiAudioHandler *handler)
+{
+  cui_audio_handler = handler;
+}
+
+CuiAudioHandler *
+cui_get_audio_handler (void)
+{
+  return cui_audio_handler;
 }

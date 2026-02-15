@@ -15,6 +15,13 @@
 
 G_DEFINE_INTERFACE (CuiAudioHandler, cui_audio_handler, G_TYPE_OBJECT)
 
+
+void
+cui_audio_handler_default_init (CuiAudioHandlerInterface *iface)
+{
+}
+
+
 void
 cui_audio_handler_mute_mic(CuiAudioHandler *self, gboolean want_mute)
 {
