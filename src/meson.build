@@ -15,6 +15,7 @@ call_ui_deps = [
   gio_dep,
   gtk_dep,
   libadwaita_dep,
+  libwireplumber_dep,
   cc.find_library('m', required: false),
   cc.find_library('rt', required: false),
 ]
@@ -31,6 +32,7 @@ call_ui_public_sources = files(
  'cui-audio-handler.c',
  'cui-audio-handler-dummy.c',
  'cui-audio-handler-callaudiod.c',
+ 'cui-audio-handler-wireplumber.c',
  'cui-call.h',
  'cui-call-display.c',
  'cui-call-display.h',

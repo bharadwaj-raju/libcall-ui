@@ -9,6 +9,7 @@
 #include "cui-audio-handler.h"
 #include "cui-audio-handler-dummy.h"
 #include "cui-audio-handler-callaudiod.h"
+#include "cui-audio-handler-wireplumber.h"
 #include "cui-encryption-indicator-priv.h"
 #include "cui-resources.h"
 
@@ -100,9 +101,9 @@ cui_init (gboolean init_callaudio)
 
   if (cui_audio_handler == NULL) {
     if (init_callaudio) {
-      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_callaudiod_new());
+      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_callaudiod_new ());
     } else {
-      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_dummy_new());
+      cui_audio_handler = CUI_AUDIO_HANDLER (cui_audio_handler_wireplumber_new ());
     }
     audio_handler_initialized = TRUE;
   }
